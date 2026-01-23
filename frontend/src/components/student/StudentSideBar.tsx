@@ -3,7 +3,7 @@ import React from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { List, Archive, Plus, LogOut } from "lucide-react";
+import { List, Archive, Plus, LogOut,FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 
@@ -42,6 +42,8 @@ export default function StudentSidebar({
 
       <nav className="space-y-1">
         <SidebarItem label="Assignments" active={active === "assignments"} onClick={() => onChange("assignments")} icon={<List size={16} />} />
+        <SidebarItem label="Tests" active={active === "tests"} onClick={() => onChange("tests")} icon={<FileText size={16} />} />
+        <SidebarItem label="Test History" active={active === "test-history"} onClick={() => onChange("test-history")} icon={<List size={16} />} />
         <SidebarItem label="My Submissions" active={active === "submissions"} onClick={() => onChange("submissions")} icon={<Archive size={16} />} />
         <SidebarItem label="New Upload" active={active === "upload"} onClick={() => onChange("upload")} icon={<Plus size={16} />} />
       </nav>

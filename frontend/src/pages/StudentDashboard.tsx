@@ -3,16 +3,27 @@ import React, { useEffect, useState, useCallback } from "react";
 import StudentSidebar from "@/components/student/StudentSideBar";
 import AssignmentCard from "@/components/student/AssignmentCard";
 import SubmissionCard from "@/components/student/SubmissionCard";
+import TestList from "@/components/student/TestList";
+import TakeTest from "@/components/student/TakeTest";
+import TestReport from "@/components/student/TestReport";
+import TestCompleted from "@/components/student/TestCompleted";
+import StudentTestHistory from "@/components/student/StudentTestHistory";
 import { listAssignmentsApi, submitAssignmentApi } from "../api/assignmentApi";
+import { getTestByIdApi } from "../api/testApi";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
 
 export default function StudentDashboard() {
+    
   const user = useAuthStore((s: any) => s.user);
 
   const [active, setActive] = useState<string>("assignments");
   const [assignments, setAssignments] = useState<any[]>([]);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  // test-taking state
+  const [testPanel, setTestPanel] = useState<"list" | "take" | "completed" | "report">("list");
+  const [activeTest, setActiveTest] = useState<any>(null);
+  const [testReport, setTestReport] = useState<any>(null);
 
   // progress mapping: assignmentId -> percent
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
@@ -66,6 +77,17 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleViewHistory = async (testId: string) => {
+      try {
+          const res = await getTestByIdApi(testId);
+          setTestReport(res.data.report);
+          setTestPanel("report");
+          setActive("tests");
+      } catch (err) {
+          toast.error("Failed to load report");
+      }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <StudentSidebar active={active} onChange={setActive} />
@@ -77,6 +99,7 @@ export default function StudentDashboard() {
         </div>
 
         <div>
+          {/* Assignment panels */}
           {active === "assignments" && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Available Assignments</h2>
@@ -111,6 +134,70 @@ export default function StudentDashboard() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Test panels */}
+          {active === "tests" && (
+            <div className="space-y-4">
+              {testPanel === "list" && (
+                <TestList
+                  onStartTest={(test) => {
+                    setActiveTest(test);
+                    setTestPanel("take");
+                  }}
+                />
+              )}
+              {testPanel === "take" && activeTest && (
+                <TakeTest
+                  test={activeTest}
+                  onTestSubmitted={(report) => {
+                    setTestReport(report);
+                    setTestPanel("completed");
+                  }}
+                />
+              )}
+              {testPanel === "completed" && testReport && (
+                <TestCompleted
+                  report={testReport}
+                  onViewReport={() => setTestPanel("report")}
+                  onBackToDashboard={() => {
+                    setTestPanel("list");
+                    setTestReport(null);
+                    setActiveTest(null);
+                  }}
+                />
+              )}
+              {testPanel === "report" && testReport && (
+                <TestReport 
+                  report={testReport} 
+                  onBack={() => {
+                    setTestPanel("list");
+                    setTestReport(null);
+                    setActiveTest(null);
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {active === "test-history" && (
+             <StudentTestHistory onSelectTest={(test) => {
+               setTestReport(null); // Clear previous if any
+               // Use a trick to reuse the report view:
+               // Fetch full details if needed, but for now let's assume valid data or fetch it
+               // Actually we need to set activeTest or testReport.
+               // The report view uses testReport object.
+               // The API returns { tests: [...] }. Each test item has score etc.
+               // But TestReport expectation: { score, total, percentage, details: [...] }
+               // The "details" might not be in the summary list if I didn't populate answers/mcqs fully or compute boolean flags.
+               // Wait, getMyReports returns `tests` which are Test documents.
+               // The Test document has `answers` and `mcqs` (populated).
+               // I need to reconstruct the `details` array for the `TestReport` component because it expects { question, yourAnswer, correctAnswer, isCorrect }.
+               // `getMyReports` controller just returns the test documents.
+               // It does NOT reconstruct the `details` array.
+               // I should probably fetch the single test report when clicked, using getTestByIdApi.
+               handleViewHistory(test._id);
+             }} />
           )}
 
           {active === "submissions" && (

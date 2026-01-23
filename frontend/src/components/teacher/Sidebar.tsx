@@ -52,6 +52,18 @@ export default function Sidebar({ active, onChange }: Props) {
           icon={<List size={16} />}
         />
         <SidebarItem
+          label="Topics"
+          active={active === "topics"}
+          onClick={() => onChange("topics")}
+          icon={<FileText size={16} />}
+        />
+        <SidebarItem
+          label="Student Reports"
+          active={active === "reports"}
+          onClick={() => onChange("reports")}
+          icon={<List size={16} />}
+        />
+        <SidebarItem
           label="Submissions"
           active={active === "submissions"}
           onClick={() => onChange("submissions")}

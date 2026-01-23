@@ -1,14 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Sidebar from "@/components/teacher/Sidebar";
+
 import AssignmentForm from "@/components/teacher/AssignmentForm";
 import AssignmentList from "@/components/teacher/AssignmentList";
 import SubmissionCard from "@/components/teacher/SubmissionCard";
+import TopicForm from "@/components/teacher/TopicForm";
+import TopicList from "@/components/teacher/TopicList";
 
 import {
   createAssignmentApi,
   getMyAssignmentsApi,
   getAssignmentSubmissionsApi,
 } from "../api/assignmentApi";
+import { getTestByIdApi } from "../api/testApi";
+import TeacherTestList from "@/components/teacher/TeacherTestList";
+import TestReport from "@/components/student/TestReport";
 
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
@@ -21,6 +27,25 @@ export default function TeacherDashboard() {
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
+  
+  // report state
+  const [activeTestReport, setActiveTestReport] = useState<any>(null);
+
+  const handleSelectTestReport = async (test: any) => {
+      // Use getTestByIdApi to fetch full report details derived from updated controller
+      try {
+        // We can import getTestByIdApi or just use the test object if we trust it?
+        // The getAllReportsApi returned populated tests.
+        // But `TestReport` expects `details` array which is constructed in `getTestById` controller NOT `getAllReports`.
+        // `getAllReports` only returns the Test documents.
+        // So we MUST call `getTestByIdApi(test._id)`.
+        const res = await getTestByIdApi(test._id);
+        setActiveTestReport(res.data.report);
+      } catch (err) {
+        toast.error("Failed to load full report");
+      }
+  };
+
 
   // load assignments
   const loadAssignments = useCallback(async () => {
@@ -64,7 +89,10 @@ export default function TeacherDashboard() {
     }
   };
 
-  // central panel renderer
+
+  // topic state for teacher
+  const [topicsRefresh, setTopicsRefresh] = useState(0);
+
   function renderCenter() {
     switch (activePanel) {
       case "create":
@@ -74,6 +102,13 @@ export default function TeacherDashboard() {
           <div>
             <h2 className="text-lg font-semibold mb-3">My Assignments</h2>
             <AssignmentList assignments={assignments} onView={handleViewSubmissions} />
+          </div>
+        );
+      case "topics":
+        return (
+          <div className="space-y-6">
+            <TopicForm onTopicCreated={() => setTopicsRefresh((c) => c + 1)} />
+            <TopicList key={topicsRefresh} />
           </div>
         );
       case "submissions":
@@ -110,6 +145,14 @@ export default function TeacherDashboard() {
               <p className="text-sm text-gray-600">Profile & preferences</p>
             </div>
           </div>
+        );
+      case "reports":
+        return (
+           activeTestReport ? (
+             <TestReport report={activeTestReport} onBack={() => setActiveTestReport(null)} />
+           ) : (
+             <TeacherTestList onSelectTest={handleSelectTestReport} />
+           )
         );
       default:
         return null;
