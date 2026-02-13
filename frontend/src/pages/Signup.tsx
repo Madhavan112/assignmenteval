@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerApi } from "../api/authApi";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,14 @@ import { Label } from "@/components/ui/label";
 
 export default function Signup() {
   const nav = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const { setAuth, user } = useAuthStore((state: any) => state);
+
+  useEffect(() => {
+    if (user) {
+      const target = user.role === "student" ? "/student" : "/teacher";
+      nav(target, { replace: true });
+    }
+  }, [user, nav]);
 
   const [form, setForm] = useState({
     name: "",

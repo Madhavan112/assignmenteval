@@ -99,11 +99,14 @@ export const submitAssignment = async (req: any, res: Response) => {
 // ------------------ GET SUBMISSIONS FOR TEACHER ------------------
 export const getAssignmentSubmissions = async (req: any, res: Response) => {
   try {
+    console.log(`Fetching submissions for assignment: ${req.params.id}`);
     const submissions = await Submission.find({ assignmentId: req.params.id })
       .populate("studentId", "name email");
-
+    
+    console.log(`Found ${submissions.length} submissions`);
     res.json({ submissions });
   } catch (err) {
+    console.error("Error fetching submissions:", err);
     res.status(500).json({ message: "Error fetching submissions" });
   }
 };

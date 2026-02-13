@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-type Props = { onCreate: () => Promise<void> };
+type Props = { onCreate: (data: any) => Promise<void> };
 
 export default function AssignmentForm({ onCreate }: Props) {
   const [form, setForm] = useState({

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getAllReportsApi } from "../../api/testApi";
 import toast from "react-hot-toast";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function TeacherTestList({ onSelectTest }: { onSelectTest: (test: any) => void }) {
   const [tests, setTests] = useState<any[]>([]);
@@ -22,56 +24,69 @@ export default function TeacherTestList({ onSelectTest }: { onSelectTest: (test:
     }
   };
 
-  if (loading) return <div>Loading reports...</div>;
+  if (loading) return (
+      <div className="space-y-4">
+          <div className="h-12 w-full bg-muted/30 rounded-lg animate-pulse" />
+          <div className="h-64 w-full bg-muted/30 rounded-lg animate-pulse" />
+      </div>
+  );
 
   if (tests.length === 0) {
-    return <div className="p-4 bg-white border rounded text-gray-500">No student reports found.</div>;
+    return (
+        <div className="flex flex-col items-center justify-center p-8 bg-muted/10 border border-dashed rounded-xl">
+            <p className="text-muted-foreground">No student reports found.</p>
+        </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Student Test Reports</h2>
-      <div className="overflow-x-auto bg-white border rounded">
+    <Card className="border-border/50 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <CardHeader>
+        <CardTitle className="text-lg font-heading font-semibold">Student Test Reports</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-muted/30 border-b border-border/50">
             <tr>
-              <th className="p-3 font-medium">Student</th>
-              <th className="p-3 font-medium">Topic</th>
-              <th className="p-3 font-medium">Score</th>
-              <th className="p-3 font-medium">Percentage</th>
-              <th className="p-3 font-medium">Date</th>
-              <th className="p-3 font-medium">Action</th>
+              <th className="p-4 font-semibold text-foreground/80">Student</th>
+              <th className="p-4 font-semibold text-foreground/80">Topic</th>
+              <th className="p-4 font-semibold text-foreground/80">Score</th>
+              <th className="p-4 font-semibold text-foreground/80">Percentage</th>
+              <th className="p-4 font-semibold text-foreground/80">Date</th>
+              <th className="p-4 font-semibold text-foreground/80 text-right">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border/40">
             {tests.map((test) => {
                const total = test.mcqs?.length || 0;
                const percent = total ? ((test.score / total) * 100).toFixed(1) : "0";
                return (
-                <tr key={test._id} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="p-3 font-medium">{test.student?.name || "Unknown"}</td>
-                  <td className="p-3 text-gray-600">{test.topic?.name || "Unknown"}</td>
-                  <td className="p-3">{test.score} / {total}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${Number(percent) >= 50 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                <tr key={test._id} className="group hover:bg-muted/30 transition-colors">
+                  <td className="p-4 font-medium text-foreground">{test.student?.name || "Unknown"}</td>
+                  <td className="p-4 text-muted-foreground">{test.topic?.name || "Unknown"}</td>
+                  <td className="p-4 font-mono">{test.score} / {total}</td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${Number(percent) >= 50 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"}`}>
                       {percent}%
                     </span>
                   </td>
-                  <td className="p-3 text-gray-500">{new Date(test.createdAt).toLocaleDateString()}</td>
-                  <td className="p-3">
-                    <button
+                  <td className="p-4 text-muted-foreground text-sm">{new Date(test.createdAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => onSelectTest(test)}
-                      className="text-sky-600 hover:text-sky-800 font-medium"
+                      className="text-primary hover:text-primary hover:bg-primary/10 h-8"
                     >
-                      View
-                    </button>
+                      View Report
+                    </Button>
                   </td>
                 </tr>
                );
             })}
           </tbody>
         </table>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
