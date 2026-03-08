@@ -1,10 +1,19 @@
 import { create } from "zustand";
 
-export const useAuthStore = create((set) => ({
-  user: null,
-  token: null,
+const getStoredUser = () => {
+  try {
+    const u = localStorage.getItem("user");
+    return u ? JSON.parse(u) : null;
+  } catch (e) {
+    return null;
+  }
+};
 
-  setAuth: (user, token) => {
+export const useAuthStore = create((set) => ({
+  user: getStoredUser(),
+  token: localStorage.getItem("token"),
+
+  setAuth: (user: any, token: string) => {
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     set({ user, token });

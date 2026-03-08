@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,15 @@ import { Toaster, toast } from "react-hot-toast";
 // LOGIN COMPONENT
 export default function Login() {
   const nav = useNavigate();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const { setAuth, user } = useAuthStore((s: any) => s);
   const [data, setData] = useState({ email: "", password: "" });
+
+  useEffect(() => {
+    if (user) {
+      const target = user.role === "student" ? "/student" : "/teacher";
+      nav(target, { replace: true });
+    }
+  }, [user, nav]);
 
   const change = (e) => setData({ ...data, [e.target.name]: e.target.value });
 
