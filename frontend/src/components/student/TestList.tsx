@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getTopics, startTest } from "@/api/testApi";
+import { getTopics, startTest, getMyReportsApi } from "@/api/testApi";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlayCircle, CheckCircle, BrainCircuit } from "lucide-react";
@@ -18,23 +18,29 @@ type TestListProps = {
 const TestList: React.FC<TestListProps> = ({ onStartTest }) => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
-  const [takenTests, setTakenTests] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("takenTests") || "[]");
-    } catch {
-      return [];
-    }
-  });
+  const [takenTests, setTakenTests] = useState<string[]>([]);
 
   useEffect(() => {
-    getTopics().then((data: any) => {
-      if (Array.isArray(data)) {
-        setTopics(data);
-      } else if (Array.isArray(data.data)) {
-        setTopics(data.data);
+    const fetchData = async () => {
+      try {
+        const [topicsData, reportsData] = await Promise.all([
+          getTopics(),
+          getMyReportsApi()
+        ]);
+        
+        const topicsList = Array.isArray(topicsData) ? topicsData : (Array.isArray(topicsData.data) ? topicsData.data : []);
+        setTopics(topicsList);
+        
+        const myTests = reportsData?.data?.tests || [];
+        const taken = myTests.map((t: any) => t.topic ? (typeof t.topic === 'string' ? t.topic : t.topic._id) : null).filter(Boolean);
+        setTakenTests(taken);
+      } catch (err) {
+        console.error("Failed to fetch data", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+    fetchData();
   }, []);
 
   const handleStart = async (topicId: string) => {
@@ -50,7 +56,6 @@ const TestList: React.FC<TestListProps> = ({ onStartTest }) => {
   const markTestTaken = (topicId: string) => {
     const updated = Array.from(new Set([...takenTests, topicId]));
     setTakenTests(updated);
-    localStorage.setItem("takenTests", JSON.stringify(updated));
   };
 
   const handleStartWithMark = async (topicId: string) => {

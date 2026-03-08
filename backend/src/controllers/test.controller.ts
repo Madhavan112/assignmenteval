@@ -149,7 +149,7 @@ export const getAllReports = async (req: Request, res: Response) => {
     // For teachers: get all completed tests
     const tests = await Test.find({ completed: true })
       .populate("student", "name email")
-      .populate("topic", "name")
+      .populate("topic", "title")
       .sort({ createdAt: -1 });
     res.json({ tests });
   } catch (err) {

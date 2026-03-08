@@ -63,7 +63,7 @@ export default function TeacherTestList({ onSelectTest }: { onSelectTest: (test:
                return (
                 <tr key={test._id} className="group hover:bg-muted/30 transition-colors">
                   <td className="p-4 font-medium text-foreground">{test.student?.name || "Unknown"}</td>
-                  <td className="p-4 text-muted-foreground">{test.topic?.name || "Unknown"}</td>
+                  <td className="p-4 text-muted-foreground">{test.topic?.title || "Unknown"}</td>
                   <td className="p-4 font-mono">{test.score} / {total}</td>
                   <td className="p-4">
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${Number(percent) >= 50 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"}`}>

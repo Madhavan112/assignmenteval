@@ -71,7 +71,7 @@ export default function AnalyticsDashboard() {
       if (pct >= 50) passedCount++;
 
       // Topic
-      const topicName = t.topic?.name || "Unknown";
+      const topicName = t.topic?.title || "Unknown";
       if (!topicMap[topicName]) topicMap[topicName] = { name: topicName, score: 0, count: 0 };
       topicMap[topicName].score += pct;
       topicMap[topicName].count += 1;
